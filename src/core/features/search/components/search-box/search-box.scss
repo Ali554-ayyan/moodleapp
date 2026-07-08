@@ -1,3 +1,5 @@
+@use "src/theme/globals" as *;
+
 :host {
     --height: var(--a11y-sizing-minTargetSize);
     --search-height: calc(var(--height) - 2px);
@@ -32,6 +34,19 @@
             --padding-start: 0px;
             --padding-end: 0px;
             font-size: var(--mdl-typography-body-fontSize-sm);
+        }
+    }
+
+    @include media-breakpoint-down(md) {
+        ion-input {
+            font-size: 13px;
+            --padding-end: 8px;
+
+            &::part(native) {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+            }
         }
     }
 
