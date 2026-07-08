@@ -3,3 +3,21 @@
 ion-list {
     padding: 0;
 }
+
+:host {
+    --width: 250px;
+    --max-width: 90vw;
+    --offset-x: -10px;
+}
+
+ion-item {
+    --min-height: 48px;
+
+    ion-label {
+        white-space: normal;
+
+        .item-heading {
+            font-size: 14px;
+        }
+    }
+}
