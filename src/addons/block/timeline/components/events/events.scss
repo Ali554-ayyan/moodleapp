@@ -51,7 +51,7 @@ h4 {
         flex-wrap: wrap;
 
         & > span {
-            @include ellipsis();
+            @include ellipsis(2);
         }
 
     }

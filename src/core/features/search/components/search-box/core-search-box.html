@@ -1,5 +1,8 @@
 <form (ngSubmit)="submitForm($event)" (focusout)="checkFocus()" role="search" #searchForm>
-    <ion-input [ariaLabel]="placeholder()" type="search" name="search" [(ngModel)]="inputValue" [placeholder]="placeholder()"
+    <div class="custom-placeholder-wrap" *ngIf="!inputValue()">
+        <span class="custom-placeholder-text">{{ placeholder() }}</span>
+    </div>
+    <ion-input [ariaLabel]="placeholder()" type="search" name="search" [(ngModel)]="inputValue" placeholder=""
         [autocorrect]="autocorrect()" [spellcheck]="spellcheck()" [core-auto-focus]="autoFocus()" [disabled]="disabled()" role="searchbox"
         (ionFocus)="focus()">
         <ion-button slot="end" fill="clear" type="submit" [ariaLabel]="searchLabel()" [disabled]="disabled() || !dirty()">
