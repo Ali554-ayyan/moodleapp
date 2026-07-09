@@ -616,6 +616,11 @@ export class CoreFormatTextDirective implements OnDestroy, AsyncDirective {
             formatted = await CoreFilter.formatText(text, options, [], siteId);
         }
 
+        // Collapse multiple non-breaking spaces (&nbsp; or \u00A0) into a single normal space.
+        // This fixes visual double/triple spacing that sometimes appears in content pasted from
+        // Word or other rich text editors, without affecting single intentional &nbsp; characters.
+ formatted = formatted.replace(/(?:&nbsp;|\u00A0|[ \t]){2,}/g, (match) => (/&nbsp;|\u00A0/.test(match) ? ' ' : match));
+
         formatted = this.treatWindowOpen(formatted);
 
         const div = document.createElement('div');
