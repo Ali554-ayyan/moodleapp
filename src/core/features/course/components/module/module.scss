@@ -189,14 +189,18 @@
     }
 
     @include media-breakpoint-down(md) {
+        .core-module-buttons {
+            background: red !important;
+        }
+
         .core-module-buttons core-course-module-completion {
-            display: none;
+            display: none !important;
         }
     }
 
     @include media-breakpoint-up(md) {
         core-course-module-completion.activity-extra {
-            display: none;
+            display: none !important;
         }
     }
 

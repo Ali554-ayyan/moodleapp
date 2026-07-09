@@ -61,14 +61,6 @@
                                         [moduleId]="module.id" (completionChanged)="completionChanged.emit($event)" />
                                 }
 
-                                <!-- Activity completion. For tablets -->
-                                @if (hasCompletion && !showLegacyCompletion) {
-                                    <core-course-module-completion [completion]="module.completiondata" [moduleName]="module.name"
-                                        [moduleId]="module.id" [showCompletionConditions]="showCompletionConditions"
-                                        [showManualCompletion]="showManualCompletion" [inCourse]="true"
-                                        (completionChanged)="completionChanged.emit($event)" />
-                                }
-
                                 <!-- Button defined by the module handler. -->
                                 @if (module.handlerData.button) {
                                     <ion-button fill="clear" class="core-module-button-more core-animate-show-hide"
