@@ -30,6 +30,21 @@ table.core-table.core-grades-table {
         vertical-align: top;
     }
 
+    .core-grades-table-grade {
+        text-align: right !important;
+        vertical-align: middle !important;
+        white-space: nowrap;
+    }
+
+    .column-itemname {
+        max-width: 60vw;
+
+        .core-grades-table-gradeitem {
+            white-space: normal;
+            word-break: break-word;
+        }
+    }
+
     .core-grades-table-gradeitem {
         @include padding(null, null, null, 4px);
 
