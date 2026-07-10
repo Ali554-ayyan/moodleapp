@@ -622,6 +622,15 @@ export class CoreFormatTextDirective implements OnDestroy, AsyncDirective {
         formatted = formatted.replace(/(?:&nbsp;|\u00A0){1,}/g, ' ').replace(/[ \t]{2,}/g, ' ');
         formatted = formatted.replace(/>\s+</g, '><').replace(/(<p[^>]*>)\s+/g, '$1').replace(/\s+(<\/p>)/g, '$1');
 
+        // Fix a common authoring typo: a space-hyphen used like a dash but missing the space
+        // after it (e.g. "anything -and be prepared" instead of "anything and be prepared").
+        // This removes the stray hyphen entirely rather than just spacing it out. It only
+        // matches " -" followed directly by a letter with no space, so it won't affect negative
+        // numbers, hyphenated words (e.g. "well-known"), or dashes that already have a trailing
+        // space (which are likely intentional). This is a display-only fix; the underlying
+        // stored text is unchanged.
+        formatted = formatted.replace(/ -([A-Za-z])/g, ' $1');
+
         // Upgrade insecure (http) image/media URLs to https to avoid mixed-content blocking,
         // which causes images to silently fail to load inside the app's https context.
         formatted = formatted.replace(/(src|data-original-src|poster)="http:\/\//g, '$1="https://');
@@ -1085,6 +1094,55 @@ export class CoreFormatTextDirective implements OnDestroy, AsyncDirective {
     }
 
     /**
+     * Normalize a URL for comparison purposes: strips protocol (http/https), a leading "www.",
+     * and any trailing slash, and lowercases the result. This is used as a fallback when
+     * CoreSite.containsUrl() fails to recognize a same-site URL just because of a protocol,
+     * "www" prefix, or trailing-slash mismatch (the most common cause of the app incorrectly
+     * treating same-site embedded content as external and skipping auto-login, which then
+     * triggers the server's "apprequired" error for content that only that check protects).
+     *
+     * @param url URL to normalize.
+     * @returns Normalized URL, or the original string if it isn't a valid URL.
+     */
+    protected normalizeUrlForComparison(url: string): string {
+        return url
+            .trim()
+            .replace(/^https?:\/\//i, '')
+            .replace(/^www\./i, '')
+            .replace(/\/+$/, '')
+            .toLowerCase();
+    }
+
+    /**
+     * Check whether a URL belongs to the given site, using CoreSite.containsUrl() first and
+     * falling back to a normalized (protocol/www/trailing-slash insensitive) comparison if that
+     * fails. This only matches URLs that share the same host as the site, so it does not affect
+     * genuinely external/third-party URLs, which will still correctly be treated as external.
+     *
+     * @param url URL to check.
+     * @param site Site instance.
+     * @returns Whether the URL belongs to the site.
+     */
+    protected urlBelongsToSite(url: string, site: CoreSite): boolean {
+        if (site.containsUrl(url)) {
+            return true;
+        }
+
+        if (!url) {
+            return false;
+        }
+
+        const normalizedUrl = this.normalizeUrlForComparison(url);
+        const normalizedSiteUrl = this.normalizeUrlForComparison(site.getURL());
+
+        if (!normalizedSiteUrl) {
+            return false;
+        }
+
+        return normalizedUrl === normalizedSiteUrl || normalizedUrl.startsWith(`${normalizedSiteUrl}/`);
+    }
+
+    /**
      * Add media adapt class and treat the iframe source.
      *
      * @param iframe Iframe to treat.
@@ -1100,7 +1158,7 @@ export class CoreFormatTextDirective implements OnDestroy, AsyncDirective {
             this.addIframeHelp(iframe);
         }
 
-        if (currentSite?.containsUrl(src)) {
+        if (currentSite && this.urlBelongsToSite(src, currentSite)) {
             // URL points to current site, try to use auto-login.
             // Remove iframe src, otherwise it can cause auto-login issues if there are several iframes with auto-login.
             iframe.src = '';
