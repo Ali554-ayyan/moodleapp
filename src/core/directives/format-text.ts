@@ -616,16 +616,18 @@ export class CoreFormatTextDirective implements OnDestroy, AsyncDirective {
             formatted = await CoreFilter.formatText(text, options, [], siteId);
         }
 
-        // Collapse multiple non-breaking spaces (&nbsp; or \u00A0) into a single normal space.
-        // This fixes visual double/triple spacing that sometimes appears in content pasted from
-        // Word or other rich text editors, without affecting single intentional &nbsp; characters.
-// Collapse non-breaking spaces (&nbsp; or \u00A0) into a single normal space, and collapse
+        // Collapse non-breaking spaces (&nbsp; or \u00A0) into a single normal space, and collapse
         // multiple regular spaces too. This fixes visual indentation/spacing issues caused by nbsp
         // characters not collapsing at line-wrap points.
         formatted = formatted.replace(/(?:&nbsp;|\u00A0){1,}/g, ' ').replace(/[ \t]{2,}/g, ' ');
         formatted = formatted.replace(/>\s+</g, '><').replace(/(<p[^>]*>)\s+/g, '$1').replace(/\s+(<\/p>)/g, '$1');
 
+        // Upgrade insecure (http) image/media URLs to https to avoid mixed-content blocking,
+        // which causes images to silently fail to load inside the app's https context.
+        formatted = formatted.replace(/(src|data-original-src|poster)="http:\/\//g, '$1="https://');
+
         formatted = this.treatWindowOpen(formatted);
+
         const div = document.createElement('div');
 
         div.innerHTML = formatted;
