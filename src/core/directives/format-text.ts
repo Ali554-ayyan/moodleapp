@@ -406,7 +406,7 @@ export class CoreFormatTextDirective implements OnDestroy, AsyncDirective {
      * Add image viewer button to view adapted images at full size.
      */
     protected async addImageViewerButton(): Promise<void> {
-        const imgs = Array.from(this.element.querySelectorAll('.core-adapted-img-container > img'));
+        const imgs = Array.from(this.element.querySelectorAll<HTMLImageElement>('.core-adapted-img-container > img'));
         if (!imgs.length) {
             return;
         }
@@ -414,7 +414,7 @@ export class CoreFormatTextDirective implements OnDestroy, AsyncDirective {
         // If cannot calculate element's width, use viewport width to avoid false adapt image icons appearing.
         const elWidth = await this.getElementWidth();
 
-        imgs.forEach((img: HTMLImageElement) => {
+        imgs.forEach((img) => {
             // Skip image if it's inside a link.
             if (img.closest('a')) {
                 return;
@@ -620,20 +620,27 @@ export class CoreFormatTextDirective implements OnDestroy, AsyncDirective {
         // multiple regular spaces too. This fixes visual indentation/spacing issues caused by nbsp
         // characters not collapsing at line-wrap points.
         formatted = formatted.replace(/(?:&nbsp;|\u00A0|[ \t]){2,}/g, ' ');
-formatted = formatted.replace(/>\s+</g, '><').replace(/(<p[^>]*>)\s+/g, '$1').replace(/\s+(<\/p>)/g, '$1');
+        formatted = formatted.replace(/>\s+</g, '><').replace(/(<p[^>]*>)\s+/g, '$1').replace(/\s+(<\/p>)/g, '$1');
 
-        // Fix a common authoring typo: a space-hyphen used like a dash but missing the space
-        // after it (e.g. "anything -and be prepared" instead of "anything and be prepared").
-        // This removes the stray hyphen entirely rather than just spacing it out. It only
-        // matches " -" followed directly by a letter with no space, so it won't affect negative
-        // numbers, hyphenated words (e.g. "well-known"), or dashes that already have a trailing
-        // space (which are likely intentional). This is a display-only fix; the underlying
-        // stored text is unchanged.
-        formatted = formatted.replace(/ -([A-Za-z])/g, ' $1');
+       // Fix orphaned punctuation: a period, comma, semicolon, colon, or similar mark that got
+// separated onto its own line/space after a closing tag (very common right after links,
+ // e.g. "</a>\n. This document..."). This pulls the punctuation back next to the tag it
+ // belongs to so it renders attached to the preceding word/link instead of floating alone.
+ formatted = formatted.replace(/>\s+([.,;:!?])/g, '>$1');
+
+        // Display-only spelling corrections for common authoring typos/regional spellings found
+        // in course content. This does not change the stored data on the server, only what is
+        // rendered in the app. Word boundaries (\b) are used so this only matches whole words
+        // (e.g. it won't touch "programmer" or "programmed").
+        formatted = formatted.replace(/\bprogramme\b/gi, (match) => match[0] === 'P' ? 'Program' : 'program');
+        formatted = formatted.replace(/\bprogrammes\b/gi, (match) => match[0] === 'P' ? 'Programs' : 'programs');
+        formatted = formatted.replace(/\bdesinged\b/gi, (match) => match[0] === 'D' ? 'Designed' : 'designed');
 
         // Upgrade insecure (http) image/media URLs to https to avoid mixed-content blocking,
         // which causes images to silently fail to load inside the app's https context.
         formatted = formatted.replace(/(src|data-original-src|poster)="http:\/\//g, '$1="https://');
+
+         formatted = formatted.replace(/<\/p>\s*<p>(?:\s|&nbsp;)*:/gi, ': ');
 
         formatted = this.treatWindowOpen(formatted);
 
