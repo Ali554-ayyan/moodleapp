@@ -225,18 +225,24 @@ core-rich-text-editor .core-rte-editor {
         // Normalize font-size inside formatted text.
         font-size: var(--text-size);
     }
-
-    p {
+p {
         margin-bottom: 1rem;
         margin-block-start: 0;
         line-height: 1.4;
         font-size: 0.80em;
         text-align-last: left;
 
-        // icon on top row, text on next row (column layout), no overlap
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        // Icon-on-top, text-below (column) layout — but ONLY for paragraphs that
+        // actually contain an adapted image. Applying flex/column to every <p>
+        // broke normal text paragraphs (e.g. a heading link immediately followed
+        // by ": description text" would get pushed onto its own line). Scoping
+        // this to :has(.core-adapted-img-container) keeps plain text paragraphs
+        // in normal block flow while still preventing image/text overlap.
+        &:has(.core-adapted-img-container) {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+    }
 
         .core-adapted-img-container {
             float: none !important;
