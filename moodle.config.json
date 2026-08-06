@@ -87,8 +87,13 @@
         "high": 120
     },
     "customurlscheme": "moodlemobile",
-    "sites": [],
-    "multisitesdisplay": "",
+  "sites": [
+  {
+    "url": "https://lets-test.lumhs.app",
+    "name": "Liaquat University of Medical and Health Sciences"
+  }
+],
+    "multisitesdisplay": "list",
     "sitefindersettings": {},
     "onlyallowlistedsites": false,
     "forcedefaultlanguage": false,
