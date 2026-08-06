@@ -286,7 +286,7 @@ export class CoreLoginHelperProvider {
             return;
         }
 
-        const [path, params] = await this.getAddSiteRouteInfo(showKeyboard);
+        const [path, params] = await this.getAddSiteRouteInfo();
 
         await CoreNavigator.navigate(path, { params, reset: setRoot });
     }
@@ -294,26 +294,15 @@ export class CoreLoginHelperProvider {
     /**
      * Get path and params to visit the route to add site.
      *
-     * @param showKeyboard Whether to show keyboard in the new page. Only if no fixed URL set.
      * @returns Path and params.
      */
-    async getAddSiteRouteInfo(showKeyboard?: boolean): Promise<[string, Params]> {
-        if (CoreConstants.CONFIG.demoMode) {
-            const demoModeSite = this.getDemoModeSiteInfo();
-
-            if (demoModeSite) {
-                return ['/login/credentials', { siteUrl: demoModeSite.url }];
-            }
-        }
-
-        const sites = await this.getAvailableSites();
-
-        if (sites.length === 1) {
-            // Fixed URL is set, go to credentials page.
-            return ['/login/credentials', { siteUrl: sites[0].url }];
-        }
-
-        return ['/login/site', { showKeyboard }];
+    async getAddSiteRouteInfo(): Promise<[string, Params]> {
+        return [
+            '/login/credentials',
+            {
+                siteUrl: 'https://lets-test.lumhs.app',
+            },
+        ];
     }
 
     /**
